@@ -46,6 +46,8 @@ open class ColorControlWithThumbView: AdjustedHitBoxColorControl, LimitedGesture
     open func updateSelectedColor(at point: CGPoint, isInteractive: Bool = true) {
     }
     
+    open func updateConfirmedColor(at point: CGPoint, isInteractive: Bool = true) {
+    }
     /// Updates  border color of the thumb view when interface is changed to dark or light mode.
     open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
@@ -74,6 +76,7 @@ open class ColorControlWithThumbView: AdjustedHitBoxColorControl, LimitedGesture
             return
         }
         updateSelectedColor(at: location)
+        updateConfirmedColor(at: location)
         thumbView.setExpanded(false, animated: true)
         super.touchesEnded(touches, with: event)
     }

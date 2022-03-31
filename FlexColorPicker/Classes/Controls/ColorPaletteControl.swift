@@ -3,7 +3,7 @@
 //  FlexColorPicker
 //
 //  Created by Rastislav Mirek on 27/5/18.
-//  
+//
 //	MIT License
 //  Copyright (c) 2018 Rastislav Mirek
 //
@@ -47,7 +47,8 @@ open class ColorPaletteControl: ColorControlWithThumbView {
             updatePaletteImagesAndThumb(isInteractive: false)
         }
     }
-    open override var bounds: CGRect {
+
+    override open var bounds: CGRect {
         didSet {
             guard oldValue != bounds else {
                 return
@@ -55,15 +56,15 @@ open class ColorPaletteControl: ColorControlWithThumbView {
             updatePaletteImagesAndThumb(isInteractive: false)
         }
     }
-    
-    open override var contentMode: UIView.ContentMode {
+
+    override open var contentMode: UIView.ContentMode {
         didSet {
             updateContentMode()
             updateThumbPosition(position: paletteDelegate.positionAndAlpha(for: selectedHSBColor).position)
         }
     }
 
-    open override func commonInit() {
+    override open func commonInit() {
         super.commonInit()
         contentView.addAutolayoutFillingSubview(backgroundImageView)
         backgroundImageView.addAutolayoutFillingSubview(foregroundImageView)
@@ -72,7 +73,7 @@ open class ColorPaletteControl: ColorControlWithThumbView {
         updatePaletteImagesAndThumb(isInteractive: false)
     }
 
-    open override func setSelectedHSBColor(_ hsbColor: HSBColor, isInteractive interactive: Bool) {
+    override open func setSelectedHSBColor(_ hsbColor: HSBColor, isInteractive interactive: Bool) {
         let hasChanged = selectedHSBColor != hsbColor
         super.setSelectedHSBColor(hsbColor, isInteractive: interactive)
         if hasChanged {
@@ -89,8 +90,8 @@ open class ColorPaletteControl: ColorControlWithThumbView {
     ///
     /// - Parameter interactive:  Whether the change originated from user interaction or is programatic. This can be used to determine if certain animations should be played.
     open func updatePaletteImagesAndThumb(isInteractive interactive: Bool) {
-        layoutIfNeeded() //force subviews layout to update their bounds - bounds of subviews are not automatically updated
-        paletteDelegate.size = foregroundImageView.bounds.size //cannot use self.bounds as that is extended compared to foregroundImageView.bounds when AdjustedHitBoxColorControl.hitBoxInsets are non-zero
+        layoutIfNeeded() // force subviews layout to update their bounds - bounds of subviews are not automatically updated
+        paletteDelegate.size = foregroundImageView.bounds.size // cannot use self.bounds as that is extended compared to foregroundImageView.bounds when AdjustedHitBoxColorControl.hitBoxInsets are non-zero
         foregroundImageView.image = paletteDelegate.foregroundImage()
         backgroundImageView.image = paletteDelegate.backgroundImage()
         assert(foregroundImageView.image!.size.width <= paletteDelegate.size.width && foregroundImageView.image!.size.height <= paletteDelegate.size.height, "Size of rendered image must be smaller or equal specified palette size")
@@ -122,14 +123,21 @@ open class ColorPaletteControl: ColorControlWithThumbView {
         return foregroundImageView.convert(foregroundImageView.convertFromImageSpace(point: point), to: coordinateSpace)
     }
 
-    open override func updateSelectedColor(at point: CGPoint, isInteractive: Bool) {
+    override open func updateSelectedColor(at point: CGPoint, isInteractive: Bool) {
         let pointInside = paletteDelegate.closestValidPoint(to: imageCoordinates(point: point, fromCoordinateSpace: contentView))
         setSelectedHSBColor(paletteDelegate.modifiedColor(from: selectedHSBColor, with: pointInside), isInteractive: isInteractive)
         updateThumbPosition(position: pointInside)
         sendActions(for: .valueChanged)
     }
 
-    open override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+    override open func updateConfirmedColor(at point: CGPoint, isInteractive: Bool) {
+        let pointInside = paletteDelegate.closestValidPoint(to: imageCoordinates(point: point, fromCoordinateSpace: contentView))
+        setSelectedHSBColor(paletteDelegate.modifiedColor(from: selectedHSBColor, with: pointInside), isInteractive: isInteractive)
+        updateThumbPosition(position: pointInside)
+        sendActions(for: .primaryActionTriggered)
+    }
+
+    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let maxTouchDistance = max(hitBoxInsets.bottom, hitBoxInsets.top, hitBoxInsets.left, hitBoxInsets.right, minimumDistanceForInBoundsTouchFromValidPoint)
         if imageCoordinates(point: paletteDelegate.closestValidPoint(to: imageCoordinates(point: point, fromCoordinateSpace: self)), toCoordinateSpace: self).distance(to: point) > maxTouchDistance {
             return nil
@@ -149,7 +157,7 @@ open class ColorPaletteControl: ColorControlWithThumbView {
 }
 
 extension ColorPaletteControl {
-    open override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    override open func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         return !(gestureRecognizer is UIPanGestureRecognizer)
     }
 }
